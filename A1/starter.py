@@ -26,13 +26,12 @@ def loadData():
     return trainData, validData, testData, trainTarget, validTarget, testTarget
 
 # reg = lambda
+# I'm assuming x is the matrix version
 def MSE(W, b, x, y, reg):
-    # Your implementation here
-    pass
+    return np.linalg.norm(x.dot(W) - y)**2 + reg * np.linalg.norm(w)**2
 
 def gradMSE(W, b, x, y, reg):
-    # Your implementation here
-    pass
+    return 2 * ( x.T.dot( x.dot(W) - y ) + reg * W )
 
 def grad_descent(W, b, x, y, alpha, epochs, reg, error_tol):
     # Your implementation here
