@@ -1,3 +1,7 @@
+from warnings import simplefilter
+# ignore all future warnings
+simplefilter(action='ignore', category=FutureWarning)
+
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,28 +25,38 @@ def loadData():
         testData, testTarget = Data[3600:], Target[3600:]
     return trainData, validData, testData, trainTarget, validTarget, testTarget
 
+# reg = lambda
 def MSE(W, b, x, y, reg):
     # Your implementation here
+    pass
 
 def gradMSE(W, b, x, y, reg):
     # Your implementation here
+    pass
 
 def grad_descent(W, b, x, y, alpha, epochs, reg, error_tol):
     # Your implementation here
+    pass
 
 def crossEntropyLoss(W, b, x, y, reg):
     # Your implementation here
+    pass
 
 def gradCE(W, b, x, y, reg):
     # Your implementation here
+    pass
 
 def buildGraph(loss="MSE"):
-	#Initialize weight and bias tensors
-	tf.set_random_seed(421)
+    #Initialize weight and bias tensors
+    tf.set_random_seed(421)
 
-	if loss == "MSE":
-	# Your implementation
-	
-	elif loss == "CE":
-	#Your implementation here
+    if loss == "MSE":
+        # Your implementation
+        pass
 
+    elif loss == "CE":
+        #Your implementation here
+        pass
+
+if __name__ == "__main__":
+    #trainData, validData, testData, trainTarget, validTarget, testTarget = loadData()
