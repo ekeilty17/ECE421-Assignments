@@ -42,6 +42,7 @@ def gradMSE(w, b, x, y, reg):
     return 2 * x.T.dot(x.dot(w) + b - y) + reg * w, 2 * x.T.dot(x.dot(w) + b - y) * 1
 
 
+# TODO: This function is untested!!
 def grad_descent(w, b, x, y, alpha, epochs, reg, error_tol, val_data, val_label, test_data, test_label, printing=True):
     prev_loss = 0
     for i in range(epochs):
