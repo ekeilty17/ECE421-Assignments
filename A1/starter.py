@@ -30,6 +30,8 @@ def loadData():
 # reg = lambda
 # I'm assuming x is the matrix version
 # I agree with this interpretation, but I changed input W to w since it's a vector and not matrix -Dev
+# The dimensions of w are unclear in the assignment, but I think w is a column vector, x is an n by d matrix. lmk if you
+#   think otherwise.
 def MSE(w, b, x, y, reg):
     return np.linalg.norm(x.dot(w) + b - y) ** 2 + reg / 2 * np.linalg.norm(w) ** 2
 
@@ -37,12 +39,29 @@ def MSE(w, b, x, y, reg):
 # Je suis confused. The document says 'return the gradient with respect to the weights and the gradient with respect to
 #   the bias. Which one do we return? Or, are we supposed to return both in a list or something?
 def gradMSE(w, b, x, y, reg):
-    return 2 * (x.T.dot(x.dot(w) + b - y) + reg * w)
+    return 2 * x.T.dot(x.dot(w) + b - y) + reg * w, 2 * x.T.dot(x.dot(w) + b - y) * 1
 
 
-def grad_descent(w, b, x, y, alpha, epochs, reg, error_tol):
-    # Your implementation here
-    pass
+def grad_descent(w, b, x, y, alpha, epochs, reg, error_tol, val_data, val_label, test_data, test_label, printing=True):
+    prev_loss = 0
+    for i in range(epochs):
+        grad_w, grad_b = gradMSE(w, b, x, y, reg)
+        w -= alpha * grad_w
+        b -= alpha * grad_b
+        loss = MSE(w, b, x, y, reg)
+
+        # Print Losses if printing is on
+        if printing:
+            print("Training loss is", loss)
+            print("Validation loss is ", MSE(w, b, val_data, val_label, reg))
+
+        # Check stopping condition
+        if np.abs(prev_loss - loss) <= error_tol:
+            break
+        else:
+            prev_loss = loss
+    print("Test loss is ", MSE(w, b, test_data, test_label, reg))
+    return w, b
 
 
 def crossEntropyLoss(W, b, x, y, reg):
