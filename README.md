@@ -1,2 +1,2 @@
 # ECE421 Assignments
-authors: Devansh Ranade and Eric Keilty
+authors: Devansh Ranade and Eric Keilty and Sandra Petkovic
