@@ -275,6 +275,7 @@ def sigmoid(z):
 # Cross Entropy Loss
 def crossEntropyLoss(w, b, X, y, reg):
     X, w = augment(X, w, b)
+    y = y.reshape(-1)
 
     #
     # LOGARITHMS DONE IN BASE E for now
@@ -285,22 +286,67 @@ def crossEntropyLoss(w, b, X, y, reg):
 
 
 def gradCE(w, b, X, y, reg):
-    # Your implementation here
-    pass
+    X, w = augment(X, w, b)
+    y = y.reshape(-1)
+    N = y.shape[0]
+
+    y_hat = sigmoid(X.dot(w))
+    sigmoid_derivative = np.multiply(y_hat, 1 - y_hat)
+    w_grad = 1.0 / N * X.T.dot(np.multiply(-1 * np.multiply(y, 1 / y_hat) + np.multiply(1 - y, 1.0 / (1 - y_hat)),
+                                           sigmoid_derivative)) + reg * w
+    return w_grad[1:], w_grad[0] - reg * w[0]
 
 # Dev
 
 
-
-def grad_descent(W, b, x, y, alpha, epochs, reg, error_tol, lossType="MSE"):
+def grad_descent(w, b, X, y, alpha, epochs, reg, error_tol, lossType="MSE", validData=None, validTarget=None,
+                 testData=None, testTarget=None):
     if lossType == "MSE":
         return grad_descent_MSE(W, b, x, y, alpha, epochs, reg, error_tol)
     elif lossType == "CE":
-        pass
+        train_loss, train_acc = [], []
+        valid_loss, valid_acc = [], []
+        test_loss, test_acc = [], []
+        printing = True
+        for i in range(epochs):
+            grad_w, grad_b = gradCE(w, b, X, y, reg)
+            w -= alpha * grad_w
+            b -= alpha * grad_b
+
+            # Calculating Statistics
+            train_loss.append(crossEntropyLoss(w, b, X, y, reg))
+            train_acc.append(accuracy(w, b, X, y))
+
+            if validData is not None and validTarget is not None:
+                valid_loss.append(crossEntropyLoss(w, b, validData, validTarget, reg))
+                valid_acc.append(accuracy(w, b, validData, validTarget))
+            if testData is not None and testTarget is not None:
+                test_loss.append(crossEntropyLoss(w, b, testData, testTarget, reg))
+                valid_acc.append(accuracy(w, b, testData, testTarget))
+
+            # Print Losses and Accurancies if printing is on
+            if printing:
+                print(f"Training loss: {train_loss[-1]:.4f}\tTraining acc: {train_acc[-1] * 100:.2f}%")
+                if validData is not None and validTarget is not None:
+                    print(f"Validation loss: {valid_loss[-1]:.4f}\tValidation acc: {valid_acc[-1] * 100:.2f}%")
+                if testData is not None and testTarget is not None:
+                    print(f"Testing loss: {test_loss[-1]:.4f}\tTesting acc: {test_acc[-1] * 100:.2f}%")
+
+            # Check stopping condition
+            if i > 1 and np.abs(train_loss[-2] - train_loss[-1]) <= error_tol:
+                break
+
+        statistics = (train_loss, train_acc)
+        if validData is not None and validTarget is not None:
+            statistics += (valid_loss, valid_acc,)
+        if testData is not None and testTarget is not None:
+            statistics += (test_loss, test_acc,)
+        out = (w, b, *statistics)
+
+        return out
+
     else:
         raise ValueError("Variable 'lossType' must be either 'MSE' or 'CE'.")
-
-# Eric
 
 
 
