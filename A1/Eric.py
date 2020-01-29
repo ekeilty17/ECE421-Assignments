@@ -173,6 +173,7 @@ def grad_descent_MSE(w, b, X, y, alpha, epochs, reg, error_tol, validData=None, 
     
     return out
 
+"""
 # 3. Tuning the Learning Rate
 N = trainData.shape[0]
 d = trainData.shape[1] * trainData.shape[2]
@@ -185,24 +186,93 @@ for alpha in [0.005, 0.001, 0.0001]:
     plot_accuracy(np.arange(0, len(train_loss), 1), train_acc, valid_acc, test_acc, subplot=True)
     plt.show()
     plt.clf()
+"""
+
+"""
+        Least Squares Method
+"""
+def least_squares(X, y):
+    N = X.shape[0]
+    d = X.shape[1] * X.shape[2]
+    X, _ = augment(X, np.zeros(X.shape[0]), 0)
+    y = y.reshape(-1)
+    
+    # overparameterized (deep learning)
+    if N < d:
+        w_aug = X.T.dot(np.linalg.inv( np.dot(X, X.T) )).dot(y)
+    # underparameterized (typical case)
+    else:
+        w_aug = np.linalg.inv( X.T @ X ) @ X.T @ y
+    
+    return w_aug[1:], w_aug[0]
+        
+# compare above to gradient descent solution
+w_LS, b_LS = least_squares(trainData, trainTarget)
+
 
 """
         CE Loss
 """
+# this will work for both scalar and vector z
 def sigmoid(z):
     return 1.0 / (1 + np.exp(-z))
 
-def crossEntropyLoss(w, b, X, y, reg=0):
-    
+# Cross Entropy Loss
+def crossEntropyLoss(w, b, X, y, reg):    
     X, w = augment(X, w, b)
+    y = y.reshape(-1)
+    N = y.shape[0]
     
-    y_hat = sigmoid(x.dot(W) + b)
-    L = np.vectorize(lambda x,y: -np.log(x) if y == 1 else -np.log(1-x))(y_hat, y)
-    #... not finished
+    # alternative mathod, but less efficient
+    """
+    e = np.vectorize(lambda y_hat, y: y_hat if y == 1 else 1-y_hat)(y_hat, y)
+    loss = -np.log(e).mean()
+    """
+    
+    return 1.0/N * (-y.dot(np.log(y_hat)) - (1 - y).dot(np.log(1 - y_hat))) + reg/2.0 * np.square(w[1:]).sum()
+    
 
-def gradCE(w, b, X, y, reg=0):
-    # Your implementation here
-    pass
+def gradCE(w, b, X, y, reg):
+    X, w = augment(X, w, b)
+    y = y.reshape(-1)
+    N = y.shape[0]
+    
+    y_hat = sigmoid(X.dot(w))
+    sigmoid_derivative = np.multiply(y_hat, 1 - y_hat)
+    w_grad = 1.0 / N * X.T.dot(np.multiply(-1 * np.multiply(y, 1 / y_hat) + np.multiply(1 - y, 1.0 / (1 - y_hat)),
+                                           sigmoid_derivative)) + reg * w
+    #return w_grad[1:], w_grad[0] - reg * w[0]
+    return w_grad[1:]
+    #return w_grad[0] - reg * w[0]
+
+def gradCE_test(w, b, X, y, reg):
+    y_hat = sigmoid(predict(w, b, X))
+    dy_hat = np.multiply(y_hat, 1 - y_hat)
+
+    X = X.reshape(X.shape[0], -1)
+    y = y.reshape(y.shape[0])
+    
+    """
+    e = np.vectorize(lambda y_hat, y: -1.0/y_hat if y == 1 else 1.0/(1 - y_hat))(y_hat, y)
+    b_grad = (e * dy_hat).mean()
+    w_grad = 1.0 / y.shape[0] * X.T @ (e * dy_hat)
+    """
+    b_grad = (y_hat - y).mean()
+    w_grad = 1.0 /y.shape[0] X.T @ (y_hat - y)
+    #return w_grad, b_grad
+    print(w_grad.shape)
+    return w_grad
+
+X = trainData
+y = trainTarget
+N = X.shape[0]
+d = X.shape[1] * X.shape[2]
+
+w = np.random.random_sample(d)
+b = np.random.random_sample(1)
+
+print(gradCE(w_LS, b_LS, X, y, 0))
+print(gradCE_test(w_LS, b_LS, X, y, 0))
 
 """
         GD with either MSE or CE
