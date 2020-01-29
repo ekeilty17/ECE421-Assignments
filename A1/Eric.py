@@ -328,6 +328,94 @@ def grad_descent(W, b, x, y, alpha, epochs, reg, error_tol, lossType="MSE"):
     
     return out
 
+"""
+        Stochastic Gradient Descent
+"""
+# Implement the SGD algorithm for a minibatch size of 500 
+# optimizing over 700 epochs 2, minimizing the MSE (you will repeat this for the CE later).
+# Calculate the total number of batches required by dividing the number
+# of training instances by the minibatch size. After each epoch you will need to reshuffle the
+# training data and start sampling from the beginning again. Initially, set \lambda = 0 and continue
+# to use the same \alpha value (i.e. 0.001). After each epoch, store the training, validation and test
+# losses and accuracies. Use these to plot the loss and accuracy curves.
+
+def SGD(w, b, X, y, alpha, epochs, reg, error_tol, batch_size, lossType="MSE", 
+                 validData=None, validTarget=None, testData=None, testTarget=None, randomize=False):
+    loss_func, grad_func = None, None
+    if lossType == "MSE":
+        loss_func, grad_func = MSE, gradMSE
+    elif lossType == "CE":
+        loss_func, grad_func = crossEntropyLoss, gradCE
+    else:
+        raise ValueError("Variable 'lossType' must be either 'MSE' or 'CE'.")
+    
+    train_loss, train_acc = [], []
+    valid_loss, valid_acc = [], []
+    test_loss, test_acc = [], []
+    printing = False
+    
+    batch_iter = BatchLoader((X, y), batch_size=batch_size)
+    
+    for i in range(epochs):
+        for batch, targets in batch_iter:
+            grad_w, grad_b = grad_func(w, b, batch, targets, reg)
+            w -= alpha * grad_w
+            b -= alpha * grad_b
+
+            # Calculating Statistics
+            train_loss.append(loss_func(w, b, batch, targets, reg))
+            train_acc.append(accuracy(w, b, batch, targets))
+
+            if validData is not None and validTarget is not None:
+                valid_loss.append(loss_func(w, b, validData, validTarget, reg))
+                valid_acc.append(accuracy(w, b, validData, validTarget))
+            if testData is not None and testTarget is not None:
+                test_loss.append(loss_func(w, b, testData, testTarget, reg))
+                test_acc.append(accuracy(w, b, testData, testTarget))
+
+            # Print Losses and Accurancies if printing is on
+            if printing:
+                print(f"Training loss: {train_loss[-1]:.4f}\tTraining acc: {train_acc[-1] * 100:.2f}%")
+                if validData is not None and validTarget is not None:
+                    print(f"Validation loss: {valid_loss[-1]:.4f}\tValidation acc: {valid_acc[-1] * 100:.2f}%")
+                if testData is not None and testTarget is not None:
+                    print(f"Testing loss: {test_loss[-1]:.4f}\tTesting acc: {test_acc[-1] * 100:.2f}%")
+
+            # Check stopping condition
+            if i > 1 and np.abs(train_loss[-2] - train_loss[-1]) <= error_tol:
+                break
+        else:
+            continue
+        break
+
+    statistics = (train_loss, train_acc)
+    if validData is not None and validTarget is not None:
+        statistics += (valid_loss, valid_acc,)
+    if testData is not None and testTarget is not None:
+        statistics += (test_loss, test_acc,)
+    out = (w, b, *statistics)
+
+    return out
+        
+X = trainData
+N = X.shape[0]
+d = X.shape[1] * X.shape[2]
+
+w = np.random.random_sample(d)
+w = w - w.mean()
+b = np.random.random_sample(1)
+w, b, *statistics = SGD(w, b, trainData, trainTarget, 0.005, 100, 0.1, 0.0001, 100, "CE", validData, validTarget, testData, testTarget)
+train_loss, train_acc, valid_loss, valid_acc, test_loss, test_acc = statistics
+#train_loss, train_acc = statistics
+
+plot_loss(np.arange(0, len(train_loss), 1), train_loss, valid_loss, test_loss, subplot=False)
+plt.show()
+plt.clf()
+plot_accuracy(np.arange(0, len(train_loss), 1), train_acc, valid_acc, test_acc, subplot=False)
+plt.show()
+plt.clf()
+
+
 def buildGraph(loss="MSE"):
     #Initialize weight and bias tensors
     tf.set_random_seed(421)
@@ -341,3 +429,17 @@ def buildGraph(loss="MSE"):
         raise ValueError("Variable 'loss' must be either 'MSE' or 'CE'.")
 
     
+"""
+Some Latex Stuff
+$$
+\mathcal{L} = \frac{1}{N}\sum_{n=1}^{N} \left [ -y^{(n)} \log( \sigma (W^T\textbf{x}^{(n)} + b)) -(1- y^{(n)}) - \log (1 - \sigma (W^T\textbf{x}^{(n)} + b) ) \right ] + \frac{\lambda}{2} \Vert W \Vert^2_2
+$$
+
+$$
+\frac{\partial \mathcal{L}}{\partial \boldsymbol{b}} = \frac{1}{N}\sum_{n=1}^{N} \left [ -\frac{y^{(n)}}{\sigma (W^T\textbf{x}^{(n)} + b)} + \frac{1- y^{(n)}}{1 - \sigma (W^T\textbf{x}^{(n)} + b)} \right ] \cdot \sigma' (W^T\textbf{x}^{(n)} + b) \cdot 1
+$$
+
+$$
+\frac{\partial \mathcal{L}}{\partial W} = \frac{1}{N} \sum_{n=1}^{N} \left [ -\frac{y^{(n)}}{\sigma (W^T\textbf{x}^{(n)} + b)} + \frac{1- y^{(n)}}{1 - \sigma (W^T\textbf{x}^{(n)} + b)} \right ] \cdot \sigma' (W^T\textbf{x}^{(n)} + b) \cdot \textbf{x}^{(n)} + \lambda W
+$$
+"""
