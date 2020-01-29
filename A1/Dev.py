@@ -239,7 +239,6 @@ plot_accuracy(np.arange(0, len(train_loss), 1), train_acc)#, valid_acc, test_acc
 
 
 
-# This needs to be checked
 def least_squares(X, y):
     N = X.shape[0]
     d = X.shape[1] * X.shape[2]
@@ -258,13 +257,14 @@ w_LS, b_LS = least_squares(trainData, trainTarget)
 
 loss = MSE(w_LS, b_LS, trainData, trainTarget, 0)
 acc = accuracy(w_LS, b_LS, trainData, trainTarget)
-print(f"Least Squares Training loss: {loss:.4f}\tLeast Squares Training acc: {acc:.2f}%")
+print(f"Least Squares Training loss: {loss:.4f}\tLeast Squares Training acc: {acc*100:.2f}%")
 loss = MSE(w_LS, b_LS, validData, validTarget, 0)
 acc = accuracy(w_LS, b_LS, validData, validTarget)
-print(f"Least Squares Validation loss: {loss:.4f}\tLeast Squares Validation acc: {acc:.2f}%")
+print(f"Least Squares Validation loss: {loss:.4f}\tLeast Squares Validation acc: {acc*100:.2f}%")
 loss = MSE(w_LS, b_LS, testData, testTarget, 0)
 acc = accuracy(w_LS, b_LS, testData, testTarget)
-print(f"Least Squares Testing loss: {loss:.4f}\tLeast Squares Testing acc: {acc:.2f}%")
+print(f"Least Squares Testing loss: {loss:.4f}\tLeast Squares Testing acc: {acc*100:.2f}%")
+
 
 
 # this will work for both scalar and vector z
@@ -276,9 +276,12 @@ def sigmoid(z):
 def crossEntropyLoss(w, b, X, y, reg):
     X, w = augment(X, w, b)
 
-    y_hat = sigmoid(X.dot(w) + b)
-    L = np.vectorize(lambda x, y: -np.log(x) if y == 1 else -np.log(1 - x))(y_hat, y)
-    # ... not finished
+    #
+    # LOGARITHMS DONE IN BASE E for now
+    #
+
+    y_hat = sigmoid(X.dot(w))
+    return (-y.dot(np.log(y_hat)) - (1 - y).dot(np.log(1 - y_hat))).mean() + reg / 2.0 * np.square(w).sum()
 
 
 def gradCE(w, b, X, y, reg):

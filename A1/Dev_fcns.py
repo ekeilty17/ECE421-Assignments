@@ -167,7 +167,7 @@ def plot_accuracy(x, train_accuracy=None, valid_accuracy=None, test_accuracy=Non
 def least_squares(X, y):
     N = X.shape[0]
     d = X.shape[1] * X.shape[2]
-    X, w_aug = augment(X, np.zeros(X.shape[0]), 0)
+    X, _ = augment(X, np.zeros(X.shape[0]), 0)
     y = y.reshape(-1)
     if N < d:
         w_aug = X.T.dot(np.linalg.inv(np.dot(X, X.T))).dot(y)
