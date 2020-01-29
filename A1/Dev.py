@@ -239,18 +239,11 @@ plot_accuracy(np.arange(0, len(train_loss), 1), train_acc)#, valid_acc, test_acc
 
 
 
-# Investigate impact by modifying the regularization parameter, \lambda = {0.001, 0.1, 0.5}.
-# Plot the training, validation and test loss for \alpha = 0:005 and report the final training,
-# validation and test accuracy of your classifier.
-
-# Sandra
-
-
 # This needs to be checked
 def least_squares(X, y):
     N = X.shape[0]
     d = X.shape[1] * X.shape[2]
-    X, w_aug = augment(X, np.zeros(X.shape[0]), 0)
+    X, _ = augment(X, np.zeros(X.shape[0]), 0)
     y = y.reshape(-1)
     if N < d:
         w_aug = X.T.dot(np.linalg.inv(np.dot(X, X.T))).dot(y)
@@ -272,8 +265,6 @@ print(f"Least Squares Validation loss: {loss:.4f}\tLeast Squares Validation acc:
 loss = MSE(w_LS, b_LS, testData, testTarget, 0)
 acc = accuracy(w_LS, b_LS, testData, testTarget)
 print(f"Least Squares Testing loss: {loss:.4f}\tLeast Squares Testing acc: {acc:.2f}%")
-
-# Dev
 
 
 # this will work for both scalar and vector z
