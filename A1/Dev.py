@@ -276,13 +276,14 @@ def sigmoid(z):
 def crossEntropyLoss(w, b, X, y, reg):
     X, w = augment(X, w, b)
     y = y.reshape(-1)
+    N = y.shape[0]
 
     #
     # LOGARITHMS DONE IN BASE E for now
     #
 
     y_hat = sigmoid(X.dot(w))
-    return (-y.dot(np.log(y_hat)) - (1 - y).dot(np.log(1 - y_hat))).mean() + reg / 2.0 * np.square(w).sum()
+    return (-y.dot(np.log(y_hat)) - (1 - y).dot(np.log(1 - y_hat))) / N + reg / 2.0 * np.square(w).sum()
 
 
 def gradCE(w, b, X, y, reg):
