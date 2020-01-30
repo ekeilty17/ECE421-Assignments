@@ -66,47 +66,46 @@ def accuracy(w, b, X, y):
     y_pred = np.vectorize(lambda z: 1 if z > 0 else 0)(y_pred)
     return sum(y_pred == y) / y.shape[0]
 
-def plot_loss(x, train_loss=None, valid_loss=None, test_loss=None, title=None, subplot=False):
-    if subplot:
-        plt.subplot(1, 2, 1)
+# functions to plot loss and accuracy
+def plot_loss(x, train_loss=None, valid_loss=None, test_loss=None, title=None, ax=None):
+    ax = plt if ax == None else ax
     if train_loss != None:
-        plt.plot(x, train_loss, label="Training Loss")
+        ax.plot(x, train_loss, label="Training Loss")
     if valid_loss != None:
-        plt.plot(x, valid_loss, label="Validation Loss")
+        ax.plot(x, valid_loss, label="Validation Loss")
     if test_loss != None:
-        plt.plot(x, test_loss, label="Testing Loss")
+        ax.plot(x, test_loss, label="Testing Loss")
     
     if title == None:
-        plt.title("Loss")
+        ax.set_title("Loss")
     else:
-        plt.title(title)
+        ax.set_title(title)
     
-    plt.xlabel("Epochs")
-    plt.xlim(left=0)
-    plt.ylabel("Loss")
-    plt.legend(loc="upper right")
+    ax.set_xlabel("Epochs")
+    ax.set_xlim(left=0)
+    ax.set_ylabel("Loss")
+    ax.legend(loc="upper right")
 
-def plot_accuracy(x, train_accuracy=None, valid_accuracy=None, test_accuracy=None, title=None, subplot=False):
-    if subplot:
-        plt.subplot(1, 2, 2)
+def plot_accuracy(x, train_accuracy=None, valid_accuracy=None, test_accuracy=None, title=None, ax=None):
+    ax = plt if ax == None else ax
     if train_accuracy != None:
-        plt.plot(x, train_accuracy, label="Training Accuracy")
+        ax.plot(x, train_accuracy, label="Training Accuracy")
     if valid_accuracy != None:
-        plt.plot(x, valid_accuracy, label="Validation Accuracy")
+        ax.plot(x, valid_accuracy, label="Validation Accuracy")
     if test_accuracy != None:
-        plt.plot(x, test_accuracy, label="Testing Accuracy")
+        ax.plot(x, test_accuracy, label="Testing Accuracy")
     
     if title == None:
-        plt.title("Accuracy")
+        ax.set_title("Accuracy")
     else:
-        plt.title(title)
+        ax.set_title(title)
 
-    plt.xlabel("Epochs")
-    plt.xlim(left=0)
-    plt.ylabel("Accuracy")
-    plt.yticks(np.arange(0, 1.1, step=0.1))
-    plt.grid(linestyle='-', axis='y')
-    plt.legend(loc="lower right")
+    ax.set_xlabel("Epochs")
+    ax.set_xlim(left=0)
+    ax.set_ylabel("Accuracy")
+    ax.set_yticks(np.arange(0, 1.1, step=0.1))
+    ax.grid(linestyle='-', axis='y')
+    ax.legend(loc="lower right")
 
 
 """
@@ -173,20 +172,28 @@ def grad_descent_MSE(w, b, X, y, alpha, epochs, reg, error_tol, validData=None, 
     
     return out
 
-"""
+
 # 3. Tuning the Learning Rate
 N = trainData.shape[0]
 d = trainData.shape[1] * trainData.shape[2]
 for alpha in [0.005, 0.001, 0.0001]:
+    
+    print("alpha =", alpha)
+    
     w = np.random.random_sample(d)
     b = np.random.random_sample(1)
-    w, b, *statistics = grad_descent_MSE(w, b, trainData, trainTarget, 0.005, 5000, 0, 0.01, validData, validTarget, testData, testTarget)
+    w, b, *statistics = grad_descent_MSE(w, b, trainData, trainTarget, alpha, 50, 0, 0.01, validData, validTarget, testData, testTarget)
     train_loss, train_acc, valid_loss, valid_acc, test_loss, test_acc = statistics
-    plot_loss(np.arange(0, len(train_loss), 1), train_loss, valid_loss, test_loss, subplot=True)
-    plot_accuracy(np.arange(0, len(train_loss), 1), train_acc, valid_acc, test_acc, subplot=True)
+    
+    print(f"Training loss: {train_loss[-1]:.4f}{'':.20s}Training acc: {train_acc[-1]*100:.2f}%")
+    print(f"Validation loss: {valid_loss[-1]:.4f}\tValidation acc: {valid_acc[-1]*100:.2f}%")
+    print(f"Testing loss: {test_loss[-1]:.4f}\tTesting acc: {test_acc[-1]*100:.2f}%")
+    
+    fig, ax = plt.subplots(1, 2, figsize=(18, 6))
+    plot_loss(np.arange(0, len(train_loss), 1), train_loss, valid_loss, test_loss, ax=ax[0])
+    plot_accuracy(np.arange(0, len(train_loss), 1), train_acc, valid_acc, test_acc, ax=ax[1])
     plt.show()
-    plt.clf()
-"""
+    plt.close()
 
 """
         Least Squares Method
@@ -216,6 +223,7 @@ w_LS, b_LS = least_squares(trainData, trainTarget)
 # this will work for both scalar and vector z
 def sigmoid(z):
     return 1.0 / (1 + np.exp(-z))
+    
 
 # Cross Entropy Loss
 def crossEntropyLoss(w, b, X, y, reg):    
@@ -223,11 +231,7 @@ def crossEntropyLoss(w, b, X, y, reg):
     y = y.reshape(-1)
     N = y.shape[0]
     
-    # alternative mathod, but less efficient
-    """
-    e = np.vectorize(lambda y_hat, y: y_hat if y == 1 else 1-y_hat)(y_hat, y)
-    loss = -np.log(e).mean()
-    """
+    y_hat = sigmoid(X.dot(w))
     
     return 1.0/N * (-y.dot(np.log(y_hat)) - (1 - y).dot(np.log(1 - y_hat))) + reg/2.0 * np.square(w[1:]).sum()
     
@@ -238,31 +242,14 @@ def gradCE(w, b, X, y, reg):
     N = y.shape[0]
     
     y_hat = sigmoid(X.dot(w))
-    sigmoid_derivative = np.multiply(y_hat, 1 - y_hat)
-    w_grad = 1.0 / N * X.T.dot(np.multiply(-1 * np.multiply(y, 1 / y_hat) + np.multiply(1 - y, 1.0 / (1 - y_hat)),
-                                           sigmoid_derivative)) + reg * w
-    #return w_grad[1:], w_grad[0] - reg * w[0]
-    return w_grad[1:]
-    #return w_grad[0] - reg * w[0]
-
-def gradCE_test(w, b, X, y, reg):
-    y_hat = sigmoid(predict(w, b, X))
-    dy_hat = np.multiply(y_hat, 1 - y_hat)
-
-    X = X.reshape(X.shape[0], -1)
-    y = y.reshape(y.shape[0])
     
-    """
-    e = np.vectorize(lambda y_hat, y: -1.0/y_hat if y == 1 else 1.0/(1 - y_hat))(y_hat, y)
-    b_grad = (e * dy_hat).mean()
-    w_grad = 1.0 / y.shape[0] * X.T @ (e * dy_hat)
-    """
-    b_grad = (y_hat - y).mean()
-    w_grad = 1.0 /y.shape[0] X.T @ (y_hat - y)
-    #return w_grad, b_grad
-    print(w_grad.shape)
-    return w_grad
+    w_grad = 1.0 /N * X.T.dot(y_hat - y) + reg * w
+    
+    return w_grad[1:], w_grad[0] - reg * w[0]
 
+
+
+"""
 X = trainData
 y = trainTarget
 N = X.shape[0]
@@ -273,6 +260,7 @@ b = np.random.random_sample(1)
 
 print(gradCE(w_LS, b_LS, X, y, 0))
 print(gradCE_test(w_LS, b_LS, X, y, 0))
+"""
 
 """
         GD with either MSE or CE
@@ -339,6 +327,56 @@ def grad_descent(W, b, x, y, alpha, epochs, reg, error_tol, lossType="MSE"):
 # to use the same \alpha value (i.e. 0.001). After each epoch, store the training, validation and test
 # losses and accuracies. Use these to plot the loss and accuracy curves.
 
+# Implement the SGD algorithm for a minibatch size of 500 
+
+class BatchLoader(object):
+
+    def __init__(self, data, batch_size=None, randomize=True, drop_last=False, seed=None):
+    
+        # error checking
+        if len(data) > 1:
+            for i in range(len(data)-1):
+                if data[i].shape[0] != data[i+1].shape[0]:
+                    raise ValueError("All inputs must have the same number of elements")
+    
+        self.data = data if type(data) == tuple else (data, )
+        self.N = data[0].shape[0]
+        self.batch_size = batch_size if batch_size != None else self.N
+        self.drop_last = drop_last
+
+        # shuffling data
+        if randomize:
+            indices = np.arange(self.N)
+            np.random.seed(seed)
+            np.random.shuffle(indices)
+            self.data = tuple([d[indices] for d in self.data])
+    
+        self.index = 0 
+
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+    
+        # stop condition
+        if self.index >= self.N:
+            self.index = 0          # resetting index for next iteration
+            raise StopIteration
+
+        # iterating
+        self.index += self.batch_size
+    
+        if self.index > self.N:
+            if self.drop_last:
+                self.index = 0      # resetting index for next iteration
+                raise StopIteration
+            else:
+                #return self.index - self.batch_size, "end"
+                return tuple([ d[self.index - self.batch_size: ] for d in self.data ])
+        else:
+            #return self.index - self.batch_size, self.index
+            return tuple([ d[self.index - self.batch_size: self.index] for d in self.data ])
+
 def SGD(w, b, X, y, alpha, epochs, reg, error_tol, batch_size, lossType="MSE", 
                  validData=None, validTarget=None, testData=None, testTarget=None, randomize=False):
     loss_func, grad_func = None, None
@@ -356,16 +394,29 @@ def SGD(w, b, X, y, alpha, epochs, reg, error_tol, batch_size, lossType="MSE",
     
     batch_iter = BatchLoader((X, y), batch_size=batch_size)
     
+    running_loss = 0.0
+    running_acc = 0.0
+    
     for i in range(epochs):
         for batch, targets in batch_iter:
             grad_w, grad_b = grad_func(w, b, batch, targets, reg)
             w -= alpha * grad_w
             b -= alpha * grad_b
-
+            
             # Calculating Statistics
-            train_loss.append(loss_func(w, b, batch, targets, reg))
-            train_acc.append(accuracy(w, b, batch, targets))
-
+            running_loss += loss_func(w, b, batch, targets, reg) * batch.shape[0]
+            running_acc += accuracy(w, b, batch, targets) * batch.shape[0]
+            
+            # Check stopping condition
+            if i > 1 and np.abs(train_loss[-2] - train_loss[-1]) <= error_tol:
+                break
+        else:
+            # Calculating Statistics
+            train_loss.append(running_loss / X.shape[0])
+            train_acc.append(running_acc / X.shape[0])
+            running_loss = 0.0
+            running_acc = 0.0
+            
             if validData is not None and validTarget is not None:
                 valid_loss.append(loss_func(w, b, validData, validTarget, reg))
                 valid_acc.append(accuracy(w, b, validData, validTarget))
@@ -380,11 +431,7 @@ def SGD(w, b, X, y, alpha, epochs, reg, error_tol, batch_size, lossType="MSE",
                     print(f"Validation loss: {valid_loss[-1]:.4f}\tValidation acc: {valid_acc[-1] * 100:.2f}%")
                 if testData is not None and testTarget is not None:
                     print(f"Testing loss: {test_loss[-1]:.4f}\tTesting acc: {test_acc[-1] * 100:.2f}%")
-
-            # Check stopping condition
-            if i > 1 and np.abs(train_loss[-2] - train_loss[-1]) <= error_tol:
-                break
-        else:
+            
             continue
         break
 
@@ -396,7 +443,8 @@ def SGD(w, b, X, y, alpha, epochs, reg, error_tol, batch_size, lossType="MSE",
     out = (w, b, *statistics)
 
     return out
-        
+
+"""
 X = trainData
 N = X.shape[0]
 d = X.shape[1] * X.shape[2]
@@ -408,13 +456,12 @@ w, b, *statistics = SGD(w, b, trainData, trainTarget, 0.005, 100, 0.1, 0.0001, 1
 train_loss, train_acc, valid_loss, valid_acc, test_loss, test_acc = statistics
 #train_loss, train_acc = statistics
 
-plot_loss(np.arange(0, len(train_loss), 1), train_loss, valid_loss, test_loss, subplot=False)
+fig, ax = plt.subplots(1, 2, figsize=(18, 6))
+plot_loss(np.arange(0, len(train_loss), 1), train_loss, valid_loss, test_loss, ax=ax[0])
+plot_accuracy(np.arange(0, len(train_loss), 1), train_acc, valid_acc, test_acc, ax=ax[1])
 plt.show()
 plt.clf()
-plot_accuracy(np.arange(0, len(train_loss), 1), train_acc, valid_acc, test_acc, subplot=False)
-plt.show()
-plt.clf()
-
+"""
 
 def buildGraph(loss="MSE"):
     #Initialize weight and bias tensors
