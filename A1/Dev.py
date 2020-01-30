@@ -362,13 +362,21 @@ def grad_descent(w, b, X, y, alpha, epochs, reg, error_tol, lossType="MSE", vali
 
 def buildGraph(loss="MSE"):
     #Initialize weight and bias tensors
-    tf.set_random_seed(421)
+    seed = 421
+    d = 784
+    tf.set_random_seed(seed)
+
+    w = tf.random.truncated_normal([d], stddev=0.5, seed=seed)
+    b = tf.random.truncated_normal([1], stddev=0.5, seed=seed)
+
+    w = tf.Variable(w, name="weight")
+    b = tf.Variable(b, name="bias")
 
     if loss == "MSE":
         # Your implementation
         pass
     elif loss == "CE":
-        #Your implementation here
+        # Your implementation here
         pass
     else:
         raise ValueError("Variable 'lossType' must be either 'MSE' or 'CE'.")
