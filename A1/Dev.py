@@ -350,7 +350,6 @@ def grad_descent(w, b, X, y, alpha, epochs, reg, error_tol, lossType="MSE", vali
         raise ValueError("Variable 'lossType' must be either 'MSE' or 'CE'.")
 
 
-
 # For zero weight decay, learning rate of 0.005 and 5000 epochs,
 # plot the training cross entropy loss and MSE loss for
 # logistic regression and linear regression respectively.
