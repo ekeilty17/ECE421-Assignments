@@ -359,54 +359,34 @@ def grad_descent(w, b, X, y, alpha, epochs, reg, error_tol, lossType="MSE", vali
 # Sandra
 
 
-
-def buildGraph(loss="MSE"):
-    #Initialize weight and bias tensors
+def buildGraph(beta1=None, beta2=None, epsilon=None, alpha=0.001, loss="MSE", d=784):
+    # Initialize weight and bias tensors
     seed = 421
-    d = 784
     tf.set_random_seed(seed)
 
-    w = tf.random.truncated_normal([d], stddev=0.5, seed=seed)
-    b = tf.random.truncated_normal([1], stddev=0.5, seed=seed)
+    # Getting small random initial values for weights and bias
+    w = tf.truncated_normal([d], stddev=0.5)
+    b = tf.truncated_normal([1], stddev=0.5)
 
-    w = tf.Variable(w, name="weight")
+    # Converting into tensorflow Variable objects
+    w = tf.Variable(w, name="weights")
     b = tf.Variable(b, name="bias")
 
+    # tensorflow objects for data
+    trainData = tf.placeholder(tf.float32, (None, trainData.shape[1] * trainData.shape[2]))
+    trainTarget = tf.placeholder(tf.int8, (None, trainTarget.shape[1]))
+    reg = tf.Variable(tf.ones(1), name="reg")
+
     if loss == "MSE":
-        # Your implementation
-        pass
+        y_pred = tf.matmul(trainData, w) + b
+        loss_tensor = tf.losses.mean_squared_error(trainTarget, y_pred)
     elif loss == "CE":
-        # Your implementation here
-        pass
+        y_pred = tf.sigmoid(tf.matmul(trainData, w) + tf.convert_to_tensor(b))
+        loss_tensor = tf.losses.sigmoid_cross_entropy(trainTarget, y_pred)
     else:
         raise ValueError("Variable 'lossType' must be either 'MSE' or 'CE'.")
 
-# Come back to this later
+    opt = tf.train.AdamOptimizer(learning_rate=alpha, beta1=beta1, beta2=beta2, epsilon=epsilon)
+    opt_op = opt.minimize(loss_tensor)
 
-
-
-# Implement the SGD algorithm for a minibatch size of 500
-# optimizing over 700 epochs 2, minimizing the MSE (you will repeat this for the CE later).
-# Calculate the total number of batches required by dividing the number
-# of training instances by the minibatch size. After each epoch you will need to reshuffle the
-# training data and start sampling from the beginning again. Initially, set \lambda = 0 and continue
-# to use the same \alpha value (i.e. 0.001). After each epoch, store the training, validation and test
-# losses and accuracies. Use these to plot the loss and accuracy curves.
-
-# Dev
-
-
-
-# Eric
-
-
-
-# Sandra
-
-
-
-# anyone
-
-
-
-# Sandra
+    return w, b, testData, y_pred, testTarget, loss_tensor, opt_op, reg
