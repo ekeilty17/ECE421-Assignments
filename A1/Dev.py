@@ -303,7 +303,7 @@ def gradCE(w, b, X, y, reg):
 def grad_descent(w, b, X, y, alpha, epochs, reg, error_tol, lossType="MSE", validData=None, validTarget=None,
                  testData=None, testTarget=None):
     if lossType == "MSE":
-        return grad_descent_MSE(W, b, x, y, alpha, epochs, reg, error_tol)
+        return grad_descent_MSE(w, b, X, y, alpha, epochs, reg, error_tol)
     elif lossType == "CE":
         train_loss, train_acc = [], []
         valid_loss, valid_acc = [], []
@@ -373,6 +373,7 @@ def buildGraph(beta1=None, beta2=None, epsilon=None, alpha=0.001, loss="MSE", d=
     b = tf.Variable(b, name="bias")
 
     # tensorflow objects for data
+    trainData, _, _, trainTarget, _, _ = loadData()
     trainData = tf.placeholder(tf.float32, (None, trainData.shape[1] * trainData.shape[2]))
     trainTarget = tf.placeholder(tf.int8, (None, trainTarget.shape[1]))
     reg = tf.Variable(tf.ones(1), name="reg")
