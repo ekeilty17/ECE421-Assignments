@@ -382,7 +382,7 @@ def buildGraph(beta1=None, beta2=None, epsilon=None, alpha=0.001, loss="MSE", d=
         loss_tensor = tf.losses.mean_squared_error(trainTarget, y_pred)
     elif loss == "CE":
         y_pred = tf.sigmoid(tf.matmul(trainData, w) + tf.convert_to_tensor(b))
-        loss_tensor = tf.losses.sigmoid_cross_entropy(trainTarget, y_pred)
+        # loss_tensor = tf.losses.sigmoid_cross_entropy(trainTarget, y_pred)reg*tf.matmul(w, w)
     else:
         raise ValueError("Variable 'lossType' must be either 'MSE' or 'CE'.")
 
