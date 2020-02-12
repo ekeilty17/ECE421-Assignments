@@ -5,6 +5,8 @@ import time
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+TINY = 1e-20
+
 # Load the data
 def loadData():
     with np.load("notMNIST.npz") as data:
@@ -44,20 +46,18 @@ def shuffle(trainData, trainTarget):
 
 
 def relu(x):
-    # TODO
+    return max(0, x)
 
 def softmax(x):
-    # TODO
+    return 1.0 / (1 + np.exp(x))
 
 
 def computeLayer(X, W, b):
-    # TODO
+    return X.dot(W) + b
 
 def CE(target, prediction):
-
-    # TODO
+    N = target.shape[0]
+    return 1.0/N * (-target.dot(np.log(prediction+TINY)) - (1 - target).dot(np.log(1 - prediction+TINY)))
 
 def gradCE(target, prediction):
-
-    # TODO
-
+    return target - prediction
