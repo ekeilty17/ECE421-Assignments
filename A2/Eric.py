@@ -210,3 +210,66 @@ y = trainTarget
 
 dL_dWo, dL_dbo, dL_dWh, dL_dbh = model.backprop(X, y)
 print(dL_dWo, dL_dbo, dL_dWh, dL_dbh)
+
+"""
+Pytorch Implementation and debugging
+"""
+import torch
+import torch.nn as nn
+
+class TsetNN(nn.Module):
+
+    def __init__(self, D, F, K):
+        super(TsetNN, self).__init__()
+        self.H = nn.Linear(D, F)
+        self.O = nn.Linear(F, K)
+
+    def forward(self, x):
+        x = self.H(x)
+        x = nn.ReLU()(x)
+        x = self.O(x)
+        return x
+
+    def training_loop(self, X, y, alpha, gamma):
+        self.train()
+        optimizer = torch.optim.SGD(model.parameters(), lr=alpha, momentum=gamma)
+        print(self(X))
+
+X = trainData.reshape(N, d)
+newtrain, newvalid, newtest = convertOneHot(trainTarget, validTarget, testTarget)
+y = newtrain
+
+test_model = TsetNN(d, 500, K)
+
+W_h = test_model.state_dict()["H.weight"]
+b_h = test_model.state_dict()["H.bias"]
+W_o = test_model.state_dict()["O.weight"]
+b_o = test_model.state_dict()["O.bias"]
+
+model.W_h = W_h.numpy()
+model.b_h = b_h.numpy()
+model.W_o = W_o.numpy()
+model.b_o = b_o.numpy()
+
+"""
+# Feedforward test ... works properly
+test_pred = nn.Softmax(dim=1)(test_model(torch.Tensor(X)))
+print(test_pred)
+print(model.feedforward(X))
+"""
+
+# Gradient test
+optimizer = torch.optim.SGD(test_model.parameters(), lr=1e-5, momentum=0.99)
+optimizer.zero_grad()
+test_pred = test_model(torch.Tensor(X))
+loss = nn.CrossEntropyLoss()(input=test_pred, target=torch.Tensor(trainTarget).long())
+loss.backward()
+#optimizer.step()
+
+for name, param in test_model.named_parameters():
+    print(name, param.grad)
+
+model.feedforward(X)
+dL_dWo, dL_dbo, dL_dWh, dL_dbh = model.backpropagation(X, y)
+print(dL_dWh)
+
