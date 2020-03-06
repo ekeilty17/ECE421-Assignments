@@ -252,7 +252,7 @@ model.W_o = W_o.numpy()
 model.b_o = b_o.numpy()
 
 """
-# Feedforward test ... works properly
+# Feedforward test
 test_pred = nn.Softmax(dim=1)(test_model(torch.Tensor(X)))
 print(test_pred)
 print(model.feedforward(X))
