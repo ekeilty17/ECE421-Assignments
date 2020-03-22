@@ -56,12 +56,10 @@ def log_GaussPDF(X, mu, sigma):
 
     # So, the output here is an NxK matrix. The i,j entry represent the log probability of the the i-th example
     # belonging to cluster j.
-    # This is a distribution, so the sum of all the probabilities should give 1. To check this, don't forget to
-    # take the exponential of each term first (since it's log prob)
     return np.array(pair_dist)
 
 
-def log_posterior(log_PDF, log_pi):
+def log_posterior(log_PDF):
     # Input
     # log_PDF: log Gaussian PDF N X K
     # log_pi: K X 1
