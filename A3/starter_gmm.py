@@ -50,8 +50,10 @@ def log_GaussPDF(X, mu, sigma):
 
             # Note that the determinant of a constant times an nxn Identity matrix is the constant raised to n
             # because determinant is linear in each column and the determinant of the identity matrix is 1
-            prob = np.exp(-0.5 * np.square(x - mu_k).sum() / sigma[k]) / np.sqrt((2 * np.pi) ** K * sigma[k] ** D)
-            row.append(np.log(prob))
+            # Also, this is the actual expression for prob, but I have simplified it in the implementation
+            # np.exp(-0.5 * np.square(x - mu_k).sum() / sigma[k]) / np.sqrt((2 * np.pi) ** K * sigma[k] ** D)
+            temp = np.sqrt((2 * np.pi) ** K * sigma[k] ** D)
+            row.append(-0.5 * np.square(x - mu_k).sum() / sigma[k] - np.log(temp))
         pair_dist.append(row)
 
     # So, the output here is an NxK matrix. The i,j entry represent the log probability of the the i-th example
