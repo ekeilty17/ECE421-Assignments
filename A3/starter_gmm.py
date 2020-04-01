@@ -98,9 +98,9 @@ def neg_log_likelihood_gmm(log_PDF, log_pi):
     """
     neg_log_likelihood = 0
     for n, sample in enumerate(log_PDF):
-        prob = 0
+        log_prob = 0
         for k, clusters in enumerate(sample):
-            prob += np.exp(log_pi[k] + log_PDF[n][k])
-        neg_log_likelihood -= np.log(prob)
+            log_prob += log_pi[k] + log_PDF[n][k]
+        neg_log_likelihood -= log_prob
 
     return neg_log_likelihood
